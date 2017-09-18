@@ -19,13 +19,13 @@ class AutoComplete extends Component {
 
     onInputChange(e) {
         let val = e.target.value;
-        if (val && val.length > 1) {
+        this.setState({ val: val });
+        if (val && val.length > 0) {
             let sug = this.filterSuggestions(this.state.suggestions);
             if (sug.length < 20) {
-                this.setState({ val: val });
                 this.getSuggestionList(val);
             } else {
-                this.setState({ val: val, suggestions: sug });
+                this.setState({ suggestions: sug });
             }
         }
     }
@@ -52,14 +52,23 @@ class AutoComplete extends Component {
                         suggestions && suggestions.map(_ => {
                             return (
                                 <div key={uuid.v4()}>
-                                    <h3>{_.title} </h3>
-                                    {_.suggestions.map(s =>
+                                    {_.title && <h3>{_.title} </h3>}
+                                    {_.suggestions && _.suggestions.map(s =>
                                         <li
-                                            onClick={() => this.onSuggestSelect(_)}
+                                            onClick={() => this.onSuggestSelect(s, _)}
                                             className="pointer"
                                             key={uuid.v4()}>
                                             {s.text}
-                                        </li>)}
+                                        </li>)
+                                    }
+                                    {
+                                        (!_.suggestions && <li
+                                            onClick={() => this.onSuggestSelect(_)}
+                                            className="pointer"
+                                            key={uuid.v4()}>
+                                            {_.text}
+                                        </li>)
+                                    }
                                 </div>);
                         })
                     }
@@ -77,20 +86,22 @@ class AutoComplete extends Component {
                     this.setState({ suggestions: suggestions });
                 }
                 if (this.state.suggestions.length < 20) {
-                    axios.get(this.props.getSuggestionsUrl + '?s=' + filterValue).then((response) => {
-                        if (response.data) {
-                            this.setState({ suggestions: response.data });
-                        } else {
-                            this.setState({ suggestions: response });
-                        }
-                    }).catch((err) => { });
+                    if (this.props.getSuggestionsUrl) {
+                        axios.get(this.props.getSuggestionsUrl + '?s=' + filterValue).then((response) => {
+                            if (response.data) {
+                                this.setState({ suggestions: response.data });
+                            } else {
+                                this.setState({ suggestions: response });
+                            }
+                        }).catch((err) => { });
+                    }
                 }
             });
         }
     }
 
     filterSuggestions(suggestions, val) {
-        if (suggestions && suggestions.length > 0) {
+        if (val && val.length > 0 && suggestions && suggestions.length > 0) {
             let sug = JSON.parse(JSON.stringify(suggestions));
             sug.filter(_ => _.text.toLowerCase().includes(val.toLowerCase()));
             return sug;

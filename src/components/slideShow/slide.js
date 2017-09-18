@@ -2,9 +2,8 @@ import React from "react";
 import RenderItem from "../renderJson/renderItem";
 import SchemaView from "../renderJson/schemaView";
 import uuid from "uuid";
-import { IJson } from "../../types";
 
-const Slide = ({ json, className }: { json: IJson, className: string }) => {
+const Slide = ({ json, className }) => {
   const { content, ...rest } = json;
   return (
     <div

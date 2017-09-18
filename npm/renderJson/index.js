@@ -1,6 +1,5 @@
 import React from "react";
 import uuid from "uuid";
-import { IJson } from "../../types";
 import SchemaView from "./schemaView";
 import RenderItem from "./renderItem";
 var RenderJson = function RenderJson(_ref) {

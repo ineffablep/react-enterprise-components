@@ -4,7 +4,6 @@ import React from "react";
 import RenderItem from "../renderJson/renderItem";
 import SchemaView from "../renderJson/schemaView";
 import uuid from "uuid";
-import { IJson } from "../../types";
 
 var Slide = function Slide(_ref) {
   var json = _ref.json,

@@ -1,15 +1,12 @@
-//@flow
 import React from "react";
 
 const Badge = ({
+  text,
   onClick,
   className
-}: {
-  onClick: Function,
-  className: string
 }) => {
   return (
-    <span className={"w3-badge w3-border " + className} onClick={onClick} />
+    <span className={"w3-badge w3-border " + className} onClick={onClick}> {text} </span>
   );
 };
 

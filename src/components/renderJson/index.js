@@ -1,10 +1,8 @@
-// @flow
 import React from "react";
 import uuid from "uuid";
-import { IJson } from "../../types";
 import SchemaView from "./schemaView";
 import RenderItem from "./renderItem";
-const RenderJson = ({ json }: { json: Array<IJson> }) => {
+const RenderJson = ({ json }) => {
   return (
     <div>
       {json && json.map(_ => {

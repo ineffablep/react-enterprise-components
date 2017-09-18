@@ -3,7 +3,6 @@ function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in ob
 import React from "react";
 import uuid from "uuid";
 import Img from "react-image";
-import { IJson } from "../../types";
 
 var RenderItem = function RenderItem(_ref) {
   var SchemaView = _ref.SchemaView,

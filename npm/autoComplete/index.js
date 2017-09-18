@@ -34,13 +34,13 @@ var AutoComplete = function (_Component) {
         key: 'onInputChange',
         value: function onInputChange(e) {
             var val = e.target.value;
-            if (val && val.length > 1) {
+            this.setState({ val: val });
+            if (val && val.length > 0) {
                 var sug = this.filterSuggestions(this.state.suggestions);
                 if (sug.length < 20) {
-                    this.setState({ val: val });
                     this.getSuggestionList(val);
                 } else {
-                    this.setState({ val: val, suggestions: sug });
+                    this.setState({ suggestions: sug });
                 }
             }
         }
@@ -75,24 +75,34 @@ var AutoComplete = function (_Component) {
                         return React.createElement(
                             'div',
                             { key: uuid.v4() },
-                            React.createElement(
+                            _.title && React.createElement(
                                 'h3',
                                 null,
                                 _.title,
                                 ' '
                             ),
-                            _.suggestions.map(function (s) {
+                            _.suggestions && _.suggestions.map(function (s) {
                                 return React.createElement(
                                     'li',
                                     {
                                         onClick: function onClick() {
-                                            return _this2.onSuggestSelect(_);
+                                            return _this2.onSuggestSelect(s, _);
                                         },
                                         className: 'pointer',
                                         key: uuid.v4() },
                                     s.text
                                 );
-                            })
+                            }),
+                            !_.suggestions && React.createElement(
+                                'li',
+                                {
+                                    onClick: function onClick() {
+                                        return _this2.onSuggestSelect(_);
+                                    },
+                                    className: 'pointer',
+                                    key: uuid.v4() },
+                                _.text
+                            )
                         );
                     })
                 )
@@ -110,13 +120,15 @@ var AutoComplete = function (_Component) {
                         _this3.setState({ suggestions: suggestions });
                     }
                     if (_this3.state.suggestions.length < 20) {
-                        axios.get(_this3.props.getSuggestionsUrl + '?s=' + filterValue).then(function (response) {
-                            if (response.data) {
-                                _this3.setState({ suggestions: response.data });
-                            } else {
-                                _this3.setState({ suggestions: response });
-                            }
-                        }).catch(function (err) {});
+                        if (_this3.props.getSuggestionsUrl) {
+                            axios.get(_this3.props.getSuggestionsUrl + '?s=' + filterValue).then(function (response) {
+                                if (response.data) {
+                                    _this3.setState({ suggestions: response.data });
+                                } else {
+                                    _this3.setState({ suggestions: response });
+                                }
+                            }).catch(function (err) {});
+                        }
                     }
                 });
             }
@@ -124,7 +136,7 @@ var AutoComplete = function (_Component) {
     }, {
         key: 'filterSuggestions',
         value: function filterSuggestions(suggestions, val) {
-            if (suggestions && suggestions.length > 0) {
+            if (val && val.length > 0 && suggestions && suggestions.length > 0) {
                 var sug = JSON.parse(JSON.stringify(suggestions));
                 sug.filter(function (_) {
                     return _.text.toLowerCase().includes(val.toLowerCase());

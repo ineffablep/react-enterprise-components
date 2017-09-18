@@ -1,6 +1,6 @@
 {
   "name": "react-enterprise-components",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fully customizable Fastest Rendering React Enterprise Components  Form,Panel, Alert, SlideShow, Progress, Slide, PercentageStats, NumberStats, Badge, Spin, Footer, DatePicker, AutoComplete, Card, Tab,FloatInput, Input, Table, Switch, Select, ImageText, NotificationPanel, Seo, Checkbox, BaseInput ",
   "repository": {
     "type": "git",

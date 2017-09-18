@@ -1,17 +1,11 @@
-// @flow
 import React from "react";
-import { IAlert } from "../../types/";
 /**
  * <Alert alertText="dfadfa" className="w3-red"/>
  * @param {*} param0 
  */
 
 class Alert extends React.Component {
-  state: {
-    toggleClass: string
-  };
-  onCloseClick: Function;
-  constructor(props: IAlert) {
+  constructor(props) {
     super(props);
     this.onCloseClick = this.onCloseClick.bind(this);
     this.state = {

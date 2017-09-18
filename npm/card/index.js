@@ -8,7 +8,9 @@ var Card = function Card(_ref) {
         headerClassName = _ref.headerClassName,
         content = _ref.content,
         contentClassName = _ref.contentClassName,
-        buttons = _ref.buttons;
+        buttons = _ref.buttons,
+        headerButton = _ref.headerButton,
+        children = _ref.children;
 
     return React.createElement(
         'div',
@@ -16,9 +18,25 @@ var Card = function Card(_ref) {
         React.createElement(
             'header',
             { className: 'w3-container pointer ' + headerClassName },
-            React.createElement(
+            headerButton ? React.createElement(
                 'h3',
                 null,
+                React.createElement(
+                    'span',
+                    { className: 'w3-left' },
+                    ' ',
+                    title,
+                    ' '
+                ),
+                React.createElement(
+                    'button',
+                    { className: 'w3-right', onClick: headerButton.onClick },
+                    React.createElement('i', { className: headerButton.icon }),
+                    headerButton.text
+                )
+            ) : React.createElement(
+                'h3',
+                { className: 'w3-center' },
                 ' ',
                 title,
                 ' '
@@ -33,9 +51,10 @@ var Card = function Card(_ref) {
                     { key: uuid.v4() },
                     ' ',
                     _,
-                    ' '
+                    '  '
                 );
-            })
+            }),
+            children
         ),
         React.createElement(
             'footer',
@@ -44,13 +63,13 @@ var Card = function Card(_ref) {
             buttons && buttons.map(function (_) {
                 return _.isLink ? React.createElement(
                     Link,
-                    { className: 'w3-button w3-theme-d1 ' + _.className, to: _.link },
+                    { key: uuid.v4(), className: 'w3-button w3-theme-d1 ' + _.className, to: _.link },
                     ' ',
                     _.text,
                     ' '
                 ) : React.createElement(
                     'button',
-                    { className: 'w3-button w3-theme-d1 ' + _.className, onClick: _.onClick },
+                    { key: uuid.v4(), className: 'w3-button w3-theme-d1 ' + _.className, onClick: _.onClick },
                     ' ',
                     _.text,
                     ' '
@@ -67,7 +86,7 @@ Card.propTypes = {
     /**
      * Card Title
      */
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     /**
      * Card Header Class Name
      */
@@ -81,8 +100,17 @@ Card.propTypes = {
      * Card Body Class Name
      */
     contentClassName: PropTypes.string,
+    /**
+     * Header Button
+     */
+    headerButton: PropTypes.shape({
+        onClick: PropTypes.func,
+        icon: PropTypes.string,
+        text: PropTypes.string,
+        className: PropTypes.string
+    }),
 
-    buttons: PropTypes.arrayOf({
+    buttons: PropTypes.shape({
         /**
         * Card Footer  Button Text
         */
@@ -94,7 +122,9 @@ Card.propTypes = {
         /**
          * Button Class Name
          */
-        className: PropTypes.string
+        className: PropTypes.string,
+        isLink: PropTypes.bool,
+        link: PropTypes.string
     })
 };
 

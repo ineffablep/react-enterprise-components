@@ -2,9 +2,8 @@
 import React from "react";
 import uuid from "uuid";
 import Img from "react-image";
-import { IJson } from "../../types";
 
-const RenderItem = ({ SchemaView, json }: { SchemaView: {parseSchema(json:IJson):Function}, json: IJson }) => {
+const RenderItem = ({ SchemaView, json }) => {
   const { component, ...rest } = json;
 
   if (component === "Image") {
