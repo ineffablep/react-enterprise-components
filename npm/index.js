@@ -1,10 +1,10 @@
-import Form from "react-json-schema-form/Form";
-import BaseInput from "react-json-schema-form/BaseInput";
-import Checkbox from "react-json-schema-form/Checkbox";
-import FloatInput from "react-json-schema-form/FloatInput";
-import Input from "react-json-schema-form/Input";
-import Select from "react-json-schema-form/Select";
-import Switch from "react-json-schema-form/Switch";
+import Form from "./form";
+import BaseInput from "./baseInput";
+import Checkbox from "./checkbox";
+import FloatInput from "./androidInput";
+import Input from "./input";
+import Select from "./select";
+import Switch from "./switch";
 
 import Alert from "./alert";
 import Badge from "./badge";
@@ -22,8 +22,6 @@ import Tab from './tab';
 import ImageText from './imageText';
 import NotificationPanel from './notificationPanel';
 import Seo from './seo';
-import 'react-datepicker/dist/react-datepicker.css';
-import "react-json-schema-form/index.css";
 import './index.css';
 /**
  * <DatePicker
@@ -32,8 +30,8 @@ onChange={this.handleChange}
 showTimeSelect
 dateFormat="LLL" />
  */
-import DatePicker from 'react-datepicker';
-import Table from 'react-enterprise-table';
+import DatePicker from './datePicker';
+import Table from './table';
 
 export default {
   Form: Form,

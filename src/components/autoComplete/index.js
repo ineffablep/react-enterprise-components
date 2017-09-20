@@ -13,30 +13,37 @@ class AutoComplete extends Component {
 
         this.state = {
             val: '',
-            suggestions: this.props.suggestions
+            selectedSuggestion: this.props.selectedSuggestion,
+            suggestions: this.props.suggestions,
+            suggestionsCache: this.props.suggestions,
+            inputVal: '',
+            inputFocus: false
         };
     }
 
     onInputChange(e) {
         let val = e.target.value;
-        this.setState({ val: val });
+        this.setState({ val: val, inputVal: val });
         if (val && val.length > 0) {
-            let sug = this.filterSuggestions(this.state.suggestions);
+            let sug = this.filterSuggestions(this.state.suggestions, val);
+            this.setState({ suggestions: sug });
             if (sug.length < 20) {
                 this.getSuggestionList(val);
-            } else {
-                this.setState({ suggestions: sug });
             }
         }
     }
 
-    onSuggestSelect(sugItem) {
+    onSuggestSelect(sugItem, _) {
         if (sugItem) {
-            this.setState({ val: '' });
+            this.setState({ val: '', selectedSuggestion: sugItem, inputVal: sugItem.text, inputFocus: false });
             if (this.props.onSuggestSelect) {
-                this.props.onSuggestSelect(sugItem);
+                this.props.onSuggestSelect(sugItem, _);
             }
         }
+    }
+
+    onInputFocus = (e) => {
+        this.setState({ inputFocus: true });
     }
 
     render() {
@@ -45,9 +52,12 @@ class AutoComplete extends Component {
         return (
             <div className="autoComplete">
                 <input type="search" autoComplete
-                    className="w3-input" onChange={this.onInputChange}
+                    value={this.state.inputVal}
+                    onFocus={this.onInputFocus}
+                    className={'w3-input ' + this.props.className}
+                    onChange={this.onInputChange}
                     placeholder={placeholder} />
-                {this.state.val && <ul className="w3-ul w3-white w3-border sug">
+                {(this.state.val || this.state.inputFocus) && <ul className="w3-ul w3-white w3-border sug">
                     {
                         suggestions && suggestions.map(_ => {
                             return (
@@ -83,15 +93,13 @@ class AutoComplete extends Component {
             localforage.getItem(this.props.localKey).then((err, sugList) => {
                 if (!err && sugList) {
                     let suggestions = this.filterSuggestions(sugList, filterValue);
-                    this.setState({ suggestions: suggestions });
+                    this.setState({ suggestions: suggestions, suggestionsCache: suggestions });
                 }
                 if (this.state.suggestions.length < 20) {
                     if (this.props.getSuggestionsUrl) {
                         axios.get(this.props.getSuggestionsUrl + '?s=' + filterValue).then((response) => {
                             if (response.data) {
-                                this.setState({ suggestions: response.data });
-                            } else {
-                                this.setState({ suggestions: response });
+                                this.setState({ suggestions: response.data, suggestionsCache: response.data });
                             }
                         }).catch((err) => { });
                     }
@@ -103,18 +111,30 @@ class AutoComplete extends Component {
     filterSuggestions(suggestions, val) {
         if (val && val.length > 0 && suggestions && suggestions.length > 0) {
             let sug = JSON.parse(JSON.stringify(suggestions));
-            sug.filter(_ => _.text.toLowerCase().includes(val.toLowerCase()));
-            return sug;
+            let filteredSuggestions = [];
+            sug.forEach(parent => {
+                const parentSuggestion = [];
+                if (parent.suggestions) {
+                    const filtered = parent.suggestions.filter(_ => _.text.toLowerCase().includes(val.toLowerCase()));
+                    parentSuggestion.push(...filtered);
+                }
+                if (parentSuggestion.length > 0) {
+                    filteredSuggestions.push({ title: parent.title, suggestions: parentSuggestion });
+                }
+            });
+            return filteredSuggestions;
         }
-        return suggestions;
+        return this.state.suggestionsCache;
     }
 }
 
 AutoComplete.propTypes = {
     placeholder: PropTypes.string,
     suggestions: PropTypes.array,
+    className: PropTypes.string,
     localKey: PropTypes.string.isRequired,
     onSuggestSelect: PropTypes.func,
+    selectedSuggestion: PropTypes.object,
     getSuggestionsUrl: PropTypes.string
 };
 
