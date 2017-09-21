@@ -1,5 +1,7 @@
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -20,12 +22,20 @@ var AutoComplete = function (_Component) {
 
         var _this = _possibleConstructorReturn(this, (AutoComplete.__proto__ || Object.getPrototypeOf(AutoComplete)).call(this, props));
 
+        _this.onInputFocus = function (e) {
+            _this.setState({ inputFocus: true });
+        };
+
         _this.onInputChange = _this.onInputChange.bind(_this);
         _this.onSuggestSelect = _this.onSuggestSelect.bind(_this);
 
         _this.state = {
             val: '',
-            suggestions: _this.props.suggestions
+            selectedSuggestion: _this.props.selectedSuggestion,
+            suggestions: _this.props.suggestions,
+            suggestionsCache: _this.props.suggestions,
+            inputVal: '',
+            inputFocus: false
         };
         return _this;
     }
@@ -34,23 +44,22 @@ var AutoComplete = function (_Component) {
         key: 'onInputChange',
         value: function onInputChange(e) {
             var val = e.target.value;
-            this.setState({ val: val });
+            this.setState({ val: val, inputVal: val });
             if (val && val.length > 0) {
-                var sug = this.filterSuggestions(this.state.suggestions);
+                var sug = this.filterSuggestions(this.state.suggestions, val);
+                this.setState({ suggestions: sug });
                 if (sug.length < 20) {
                     this.getSuggestionList(val);
-                } else {
-                    this.setState({ suggestions: sug });
                 }
             }
         }
     }, {
         key: 'onSuggestSelect',
-        value: function onSuggestSelect(sugItem) {
+        value: function onSuggestSelect(sugItem, _) {
             if (sugItem) {
-                this.setState({ val: '' });
+                this.setState({ val: '', selectedSuggestion: sugItem, inputVal: sugItem.text, inputFocus: false });
                 if (this.props.onSuggestSelect) {
-                    this.props.onSuggestSelect(sugItem);
+                    this.props.onSuggestSelect(sugItem, _);
                 }
             }
         }
@@ -66,9 +75,12 @@ var AutoComplete = function (_Component) {
                 'div',
                 { className: 'autoComplete' },
                 React.createElement('input', { type: 'search', autoComplete: true,
-                    className: 'w3-input', onChange: this.onInputChange,
+                    value: this.state.inputVal,
+                    onFocus: this.onInputFocus,
+                    className: 'w3-input ' + this.props.className,
+                    onChange: this.onInputChange,
                     placeholder: placeholder }),
-                this.state.val && React.createElement(
+                (this.state.val || this.state.inputFocus) && React.createElement(
                     'ul',
                     { className: 'w3-ul w3-white w3-border sug' },
                     suggestions && suggestions.map(function (_) {
@@ -117,15 +129,13 @@ var AutoComplete = function (_Component) {
                 localforage.getItem(this.props.localKey).then(function (err, sugList) {
                     if (!err && sugList) {
                         var suggestions = _this3.filterSuggestions(sugList, filterValue);
-                        _this3.setState({ suggestions: suggestions });
+                        _this3.setState({ suggestions: suggestions, suggestionsCache: suggestions });
                     }
                     if (_this3.state.suggestions.length < 20) {
                         if (_this3.props.getSuggestionsUrl) {
                             axios.get(_this3.props.getSuggestionsUrl + '?s=' + filterValue).then(function (response) {
                                 if (response.data) {
-                                    _this3.setState({ suggestions: response.data });
-                                } else {
-                                    _this3.setState({ suggestions: response });
+                                    _this3.setState({ suggestions: response.data, suggestionsCache: response.data });
                                 }
                             }).catch(function (err) {});
                         }
@@ -138,12 +148,22 @@ var AutoComplete = function (_Component) {
         value: function filterSuggestions(suggestions, val) {
             if (val && val.length > 0 && suggestions && suggestions.length > 0) {
                 var sug = JSON.parse(JSON.stringify(suggestions));
-                sug.filter(function (_) {
-                    return _.text.toLowerCase().includes(val.toLowerCase());
+                var filteredSuggestions = [];
+                sug.forEach(function (parent) {
+                    var parentSuggestion = [];
+                    if (parent.suggestions) {
+                        var filtered = parent.suggestions.filter(function (_) {
+                            return _.text.toLowerCase().includes(val.toLowerCase());
+                        });
+                        parentSuggestion.push.apply(parentSuggestion, _toConsumableArray(filtered));
+                    }
+                    if (parentSuggestion.length > 0) {
+                        filteredSuggestions.push({ title: parent.title, suggestions: parentSuggestion });
+                    }
                 });
-                return sug;
+                return filteredSuggestions;
             }
-            return suggestions;
+            return this.state.suggestionsCache;
         }
     }]);
 
@@ -153,8 +173,10 @@ var AutoComplete = function (_Component) {
 AutoComplete.propTypes = {
     placeholder: PropTypes.string,
     suggestions: PropTypes.array,
+    className: PropTypes.string,
     localKey: PropTypes.string.isRequired,
     onSuggestSelect: PropTypes.func,
+    selectedSuggestion: PropTypes.object,
     getSuggestionsUrl: PropTypes.string
 };
 
